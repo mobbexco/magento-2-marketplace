@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="vendor_register_form_after">
+            <block class="Magento\Framework\View\Element\Template" name="mbbx_marketplace_vendor_form" template="Mobbex_Marketplace::vendor-creation.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
