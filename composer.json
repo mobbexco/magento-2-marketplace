@@ -21,17 +21,15 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "mobbexco/magento-2": "^2.1.0",
-        "vnecoms/module-core": "^2.1.0",
-        "vnecoms/module-vendors": "^100.4",
-        "vnecoms/module-vendors-api": "^2.4.0"
+        "mobbexco/magento-2": "^2.1.2",
+        "vnecoms/module-core": "*"
     },
     "autoload": {
         "files": [
             "registration.php"
         ],
         "psr-4": {
-            "Mobbex\\Webpay\\": ""
+            "Mobbex\\Marketplace\\": ""
         }
     },
     "minimum-stability": "dev"
