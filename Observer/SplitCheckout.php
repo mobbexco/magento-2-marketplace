@@ -9,12 +9,14 @@ class SplitCheckout implements ObserverInterface
 {
     public function __construct(
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Vnecoms\Vendors\Model\Vendor $vendor,
-        \Magento\Framework\Session\SessionManagerInterface $session
+        \Vnecoms\Vendors\Model\VendorFactory $vendorFactory,
+        \Magento\Framework\Session\SessionManagerInterface $session,
+        \Magento\Framework\Event\ManagerInterface $eventManager
     ) {
-        $this->customField = $customFieldFactory->create();
-        $this->vendor      = $vendor;
-        $this->session     = $session;
+        $this->customField   = $customFieldFactory->create();
+        $this->vendorFactory = $vendorFactory;
+        $this->session       = $session;
+        $this->eventManager  = $eventManager;
 
         $this->session->start();
     }
@@ -37,7 +39,7 @@ class SplitCheckout implements ObserverInterface
                 $product = $item->getProduct();
 
                 $total       += $item->getRowTotalInclTax() ?: $product->getFinalPrice();
-                $fee         += 0 * $item->getQtyOrdered();
+                $fee         += $this->getCommission($item);
                 $productIds[] = $product->getId();
             }
 
@@ -55,7 +57,7 @@ class SplitCheckout implements ObserverInterface
     }
 
     /**
-     * Retrieve order items ordered by cuit of each vendor
+     * Retrieve order items ordered by cuit of each vendor.
      * 
      * @param Order $order
      * 
@@ -67,8 +69,8 @@ class SplitCheckout implements ObserverInterface
 
         foreach ($order->getAllVisibleItems() as $item) {
             // Get vendor from product
-            $vendorId   = $item->getProduct()->getVendorId();
-            $vendor     = $this->vendor->loadByIdentifier($vendorId);
+            $vendorId = $item->getProduct()->getVendorId();
+            $vendor   = $this->vendorFactory->create()->load($vendorId);
 
             // Get cuit from vendor customfield
             $customerId = $vendor->getResource()->getRelatedCustomerIdByVendorId($vendorId);
@@ -82,5 +84,41 @@ class SplitCheckout implements ObserverInterface
         }
 
         return $vendors;
+    }
+
+    /**
+     * Get item commission.
+     * 
+     * @param Magento\Sales\Model\Order\Item $item
+     * 
+     * @return int
+     */
+    public function getCommission($item)
+    {
+        // Get vendor from product
+        $product = $item->getProduct();
+        $vendor  = $this->vendorFactory->create()->load($product->getVendorId());
+
+        // Set the item as invoice so Vnecoms can calculate the commission
+        $item->setInvoice($item);
+
+        if ($product->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE)
+            $product->setPrice($item->getPrice())->setPriceCalculation(false);
+
+        $commission = new \Magento\Framework\DataObject(['fee' => 0]);
+
+        $this->eventManager->dispatch(
+            'ves_vendorscredit_calculate_commission',
+            [
+                'commission'    => $commission,
+                'invoice_item'  => $item,
+                'product'       => $product,
+                'vendor'        => $vendor,
+            ]
+        );
+
+        // Set invoice to null and return fee
+        $item->setInvoice(null);
+        return $commission->getFee();
     }
 }
