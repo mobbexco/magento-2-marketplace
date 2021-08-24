@@ -8,20 +8,26 @@
 
 ## Instalación 
 > Asegurese de que todos los módulos de Vnecoms Marketplace estén instalados antes de comenzar la integración con Mobbex.
-1. Descargue el paquete en la carpeta de instalación de Magento:
+
+1. **Si está utilizando Composer 1,** primero agregue el repositorio:
+    ```
+    composer config repositories.mobbexco-magento-2-marketplace vcs https://github.com/mobbexco/magento-2-marketplace
+    ```
+
+2. Descargue el paquete:
     ```
     composer require mobbexco/magento-2-marketplace
     ```
 
-2. Asegurese de que los módulos estén activados:
+3. Asegurese de que los módulos estén activados:
     ```
     php bin/magento module:enable Mobbex_Webpay Mobbex_Marketplace
     ```
 
-3. Actualice la base de datos y regenere los archivos:
+4. Actualice la base de datos y regenere los archivos:
     ```
     php bin/magento setup:upgrade
     php bin/magento setup:static-content:deploy -f
     ```
 
-4. Añada las credenciales de Mobbex al módulo desde el panel de administración.
+5. Añada las credenciales de Mobbex al módulo desde el panel de administración.
