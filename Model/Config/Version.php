@@ -2,14 +2,11 @@
 
 namespace Mobbex\Marketplace\Model\Config;
 
-use Magento\Framework\Module\ResourceInterface;
+use Magento\Framework\App\Config\Value;
 
-class Version extends \Magento\Framework\App\Config\Value
+class Version extends Value
 {
-    /** @var ResourceInterface */
-    protected $moduleResource;
-
-    public function __construct(ResourceInterface $moduleResource)
+    public function __construct(Magento\Framework\Module\ResourceInterface $moduleResource)
     {
         $this->moduleResource = $moduleResource;
     }

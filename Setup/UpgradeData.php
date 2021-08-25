@@ -45,6 +45,22 @@ class UpgradeData implements UpgradeDataInterface
                     'used_in_registration_form' => 1,
                     'visible_in_customer_form'  => 0,
                 ],
+                'mbbx_hold' => [
+                    'label'                     => __('Hold Mobbex Payments'),
+                    'type'                      => 'int',
+                    'input'                     => 'boolean',
+                    'position'                  => 150,
+                    'sort_order'                => 150,
+                    'visible'                   => true,
+                    'required'                  => false,
+                    'default'                   => 0,
+                    'user_defined'              => 1,
+                    'system'                    => 0,
+                    'used_in_profile_form'      => 1,
+                    'used_in_registration_form' => 0,
+                    'visible_in_customer_form'  => 0,
+                    'hide_from_vendor_panel'    => 1,
+                ]
             ];
 
             foreach ($attributes as $id => $attribute) {
