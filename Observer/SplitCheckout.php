@@ -32,21 +32,21 @@ class SplitCheckout implements ObserverInterface
         $vendors = $this->getVendorsByOrder($observer->getOrder());
 
         foreach ($vendors as $cuit => $items) {
-            $total = $fee = 0;
+            $total = $fee = $shipping = 0;
             $productIds = [];
 
             foreach ($items as $item) {
                 $product = $item->getProduct();
 
                 $total       += $item->getRowTotalInclTax() ?: $product->getFinalPrice();
-                $fee         += $this->getCommission($item);
+                $shipping     = $shipping ?: $this->helper->getVendorOrder($item)->getShippingInclTax();
                 $productIds[] = $product->getId();
             }
 
             $body['split'][] = [
                 'tax_id'      => $cuit,
                 'description' => "Split payment - CUIT: $cuit - Product IDs: " . implode(", ", $productIds),
-                'total'       => $total,
+                'total'       => $total + $shipping,
                 'reference'   => $body['reference'] . '_split_' . $cuit,
                 'fee'         => $fee,
                 'hold'        => $this->customField->getCustomField($product->getVendorId(), 'vendor', 'hold') ?: false,
