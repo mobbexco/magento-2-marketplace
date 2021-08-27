@@ -6,7 +6,7 @@ use Magento\Framework\App\Config\Value;
 
 class Version extends Value
 {
-    public function __construct(Magento\Framework\Module\ResourceInterface $moduleResource)
+    public function __construct(\Magento\Framework\Module\ResourceInterface $moduleResource)
     {
         $this->moduleResource = $moduleResource;
     }
