@@ -23,7 +23,7 @@ class UpgradeData implements UpgradeDataInterface
     {
         $setup->startSetup();
 
-        if ($context->getVersion() <= '1.1.0') {
+        if ($context->getVersion() < '1.1.0') {
             // Init eav setup and get vendor entity to add attributes
             $eavSetup     = $this->eavSetupFactory->create(['setup' => $setup]);
             $vendorEntity = \Vnecoms\Vendors\Model\Vendor::ENTITY;
