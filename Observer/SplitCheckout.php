@@ -34,7 +34,7 @@ class SplitCheckout implements ObserverInterface
             foreach ($items as $item) {
                 $product = $item->getProduct();
 
-                $total       += $item->getRowTotalInclTax() ?: $product->getFinalPrice();
+                $total       += $item->getRowTotalInclTax() - $item->getBaseDiscountAmount();
                 $fee         += $this->helper->getCommission($item);
                 $shipping     = $shipping ?: $this->helper->getVendorOrder($item)->getShippingInclTax();
                 $productIds[] = $product->getId();
