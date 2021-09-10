@@ -31,3 +31,10 @@
     ```
 
 5. Añada las credenciales de Mobbex al módulo desde el panel de administración.
+
+## Actualización 
+
+Para actualizar el módulo ejecute el siguiente comando, y luego repita los pasos 3 y 4 de la instalación:
+```
+composer update mobbexco/magento-2 mobbexco/magento-2-marketplace
+```
