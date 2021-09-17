@@ -97,4 +97,21 @@ class Data extends AbstractHelper
 
         return $vendors;
     }
+
+    /**
+     * Get vendor orders from magento parent order.
+     * 
+     * @param Order $order
+     * 
+     * @return Vnecoms\VendorsSales\Model\Order[]
+     */
+    public function getVendorOrders($order)
+    {
+        $vendorOrders = [];
+
+        foreach ($this->getVendorsByOrder($order) as $items)
+            $vendorOrders[] = $this->getVendorOrder($items[0]);
+
+        return $vendorOrders;
+    }
 }
