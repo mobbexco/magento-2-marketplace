@@ -28,23 +28,28 @@ class UpdateTotals implements ObserverInterface
         $order   = $observer->getOrder();
         $webhook = $observer->getWebhook();
 
-        // Only update if payment has a discount
-        if ($webhook['payment']['total'] >= $order->getGrandTotal())
-            return;
-
-        // Get discount percentage
-        $discount = $webhook['payment']['total'] / $order->getGrandTotal();
+        // Get diff percentage
+        $diff = $webhook['payment']['total'] / $order->getGrandTotal();
 
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
             // Get current vendor order totals
-            $vendorTotal    = $vendorOrder->getGrandTotal();
-            $discountAmount = $vendorOrder->getDiscountAmount();
+            $orderTotal    = $vendorOrder->getGrandTotal();
+            $discountTotal = $vendorOrder->getDiscountAmount();
+
+            // Get total paid in mobbex
+            $totalPaid = $orderTotal * $diff;
+
+            if ($diff < 1) {
+                $vendorOrder->setDiscountAmount($discountTotal + ($orderTotal - $totalPaid));
+            } else if ($diff > 1) {
+                $vendorOrder->setMbbxFinnancialCharge($totalPaid - $orderTotal);
+            }
 
             // Update vendor order
-            $vendorOrder->setDiscountAmount($discountAmount + ($vendorTotal - ($vendorTotal * $discount)));
-            $vendorOrder->setGrandTotal($vendorTotal * $discount);
-            $vendorOrder->setTotalPaid($vendorTotal * $discount);
+            $vendorOrder->setGrandTotal($totalPaid);
+            $vendorOrder->setTotalPaid($totalPaid);
             $vendorOrder->setTotalDue(0);
+            $vendorOrder->setMbbxFinalCommission($this->helper->getVendorOrderCommission($vendorOrder) * $diff);
 
             $vendorOrder->save();
         }

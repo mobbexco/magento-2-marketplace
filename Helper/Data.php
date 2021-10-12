@@ -114,4 +114,21 @@ class Data extends AbstractHelper
 
         return $vendorOrders;
     }
+
+    /**
+     * Retrieve vendor order commission calculated by Vnecoms.
+     * 
+     * @param Vnecoms\VendorsSales\Model\Order $order
+     * 
+     * @return int
+     */
+    public function getVendorOrderCommission($order)
+    {
+        $amount = 0;
+
+        foreach ($order->getAllVisibleItems() as $item)
+            $amount += $this->getCommission($item);
+
+        return $amount;
+    }
 }
