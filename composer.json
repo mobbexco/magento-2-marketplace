@@ -21,7 +21,7 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "mobbexco/magento-2": "^2.1.2",
+        "mobbexco/magento-2": "^3",
         "vnecoms/module-core": "*"
     },
     "autoload": {
