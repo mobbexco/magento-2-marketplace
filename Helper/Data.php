@@ -2,10 +2,17 @@
 
 namespace Mobbex\Marketplace\Helper;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-
-class Data extends AbstractHelper
+class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /** @var \Vnecoms\Vendors\Model\VendorFactory */
+    public $vendorFactory;
+
+    /** @var \Vnecoms\VendorsSales\Model\OrderFactory */
+    public $orderFactory;
+
+    /** @var \Magento\Framework\Event\ManagerInterface */
+    public $eventManager;
+
     public function __construct(
         \Vnecoms\Vendors\Model\VendorFactory $vendorFactory,
         \Vnecoms\VendorsSales\Model\OrderFactory $orderFactory,

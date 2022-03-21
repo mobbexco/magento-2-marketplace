@@ -4,9 +4,9 @@
 * PHP >= 7.1
 * Magento >= 2.1.0
 * Vnecoms Marketplace >= 2.1.0
-* Mobbex for Magento 2 >= 2.1.2
+* Mobbex for Magento 2 >= 3.0.0
 
-## Instalación 
+## Instalación
 > Asegurese de que todos los módulos de Vnecoms Marketplace estén instalados antes de comenzar la integración con Mobbex.
 
 1. **Si está utilizando Composer 1,** primero agregue el repositorio:
