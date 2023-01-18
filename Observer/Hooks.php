@@ -7,10 +7,15 @@ class Hooks
     /** @var \Mobbex\Marketplace\Helper\Data */
     public $helper;
 
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    public $_objectManager;
+
     public function __construct(
-        \Mobbex\Marketplace\Helper\Data $helper
+        \Mobbex\Marketplace\Helper\Data $helper,
+        \Magento\Framework\ObjectManagerInterface $_objectManager
     ) {
-        $this->helper  = $helper;
+        $this->helper         = $helper;
+        $this->_objectManager = $_objectManager
     }
 
     /**
@@ -18,12 +23,16 @@ class Hooks
      * Add split data to checkout body (fired on mobbex checkout creation).
      * 
      * @param array $body
-     * @param Order $order
+     * @param string $orderId
      * 
      * @return array
      */
-    public function mobbexCheckoutRequest($body, $order)
+    public function mobbexCheckoutRequest($body, $orderId)
     {
+        //get the order
+        $order = $this->_objectManager->create('\Magento\Sales\Model\OrderRepository');
+        $order->loadByIncrementId($orderId);
+
         $vendors = $this->helper->getVendorsByOrder($order);
 
         foreach ($vendors as $cuit => $items) {
