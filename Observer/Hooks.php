@@ -7,15 +7,15 @@ class Hooks
     /** @var \Mobbex\Marketplace\Helper\Data */
     public $helper;
 
-    /** @var \Magento\Framework\ObjectManagerInterface */
-    public $_objectManager;
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
 
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
-        \Magento\Framework\ObjectManagerInterface $_objectManager
+        \Magento\Sales\Model\Order $_order
     ) {
         $this->helper         = $helper;
-        $this->_objectManager = $_objectManager
+        $this->_order = $_order
     }
 
     /**
@@ -30,10 +30,9 @@ class Hooks
     public function mobbexCheckoutRequest($body, $orderId)
     {
         //get the order
-        $order = $this->_objectManager->create('\Magento\Sales\Model\OrderRepository');
-        $order->loadByIncrementId($orderId);
+        $this->_order->loadByIncrementId($orderId);
 
-        $vendors = $this->helper->getVendorsByOrder($order);
+        $vendors = $this->helper->getVendorsByOrder($this->_order);
 
         foreach ($vendors as $cuit => $items) {
             $total = $fee = $shipping = 0;
