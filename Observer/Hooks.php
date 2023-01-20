@@ -14,8 +14,8 @@ class Hooks
         \Mobbex\Marketplace\Helper\Data $helper,
         \Magento\Sales\Model\Order $_order
     ) {
-        $this->helper         = $helper;
-        $this->_order = $_order
+        $this->helper = $helper;
+        $this->_order = $_order;
     }
 
     /**
