@@ -45,6 +45,7 @@ class Hooks
                 $fee         += $this->helper->getCommission($item);
                 $shipping     = $shipping ?: $this->helper->getVendorOrder($item)->getShippingInclTax();
                 $productIds[] = $product->getId();
+                $merchants    = $this->helper->getVendorEntity($item);
             }
 
             $body['split'][] = [
@@ -54,6 +55,7 @@ class Hooks
                 'reference'   => $body['reference'] . '_split_' . $cuit,
                 'fee'         => $fee,
                 'hold'        => (bool) $this->helper->getVendor($item)->getData('mbbx_hold') ?: false,
+                'merchants'   => $merchants,
             ];
         }
 
