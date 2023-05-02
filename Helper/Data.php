@@ -101,8 +101,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             $vendors[$cuit][] = $item;
         }
+    }
 
-        return $vendors;
+    /**
+     * Search seller uid of a product and returns it in entity position
+     * 
+     * @param object $item
+     * 
+     * @return array $entity
+     */
+    public function getVendorEntity($item)
+    {
+        $entity = [];
+        // Get vendor uid from vnecoms vendor information or vendor id from product
+        $uid = $this->getVendor($item)->getData('mbbx_uid') ? $this->getVendor($item)->getData('mbbx_uid') : $this->getVendor($item);
+        if ($uid)
+            $entity['entity'] = $uid;
+        
+        return $entity;
     }
 
     /**
@@ -138,4 +154,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $amount;
     }
+
+
 }
