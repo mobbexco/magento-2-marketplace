@@ -101,6 +101,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             $vendors[$cuit][] = $item;
         }
+
+        return $vendors;
     }
 
     /**
@@ -112,13 +114,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getVendorEntity($item)
     {
-        $entity = [];
+        $entity = '';
         // Get vendor uid from vnecoms vendor information or vendor id from product
-        $uid = $this->getVendor($item)->getData('mbbx_uid') ? $this->getVendor($item)->getData('mbbx_uid') : $this->getVendor($item);
-        if ($uid)
-            $entity['entity'] = $uid;
-        
-        return $entity;
+        $uid = $this->getVendor($item)->getData('mbbx_uid') ? $this->getVendor($item)->getData('mbbx_uid') : $item->getProduct()->getVendorId();
+
+        return $uid ?: $entity;
     }
 
     /**
