@@ -110,9 +110,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * @param object $item
      * 
-     * @return array $entity
+     * @return string $uid |$entity
      */
-    public function getVendorEntity($item)
+    public function getVendorUid($item)
     {
         $entity = '';
         // Get vendor uid from vnecoms vendor information or vendor id from product
