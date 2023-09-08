@@ -34,11 +34,11 @@ class Hooks
 
         $vendors = $this->helper->getVendorsByOrder($this->_order);
 
-        foreach ($vendors as $cuit => $items) {
+        foreach ($vendors as $vendorId => $vendor) {
             $total = $fee = $shipping = 0;
             $productIds = [];
 
-            foreach ($items as $item) {
+            foreach ($vendor['items'] as $item) {
                 $product = $item->getProduct();
 
                 $total       += $item->getRowTotalInclTax() - $item->getBaseDiscountAmount();
@@ -48,10 +48,11 @@ class Hooks
             }
 
             $body['split'][] = [
-                'tax_id'      => $cuit,
-                'description' => "Split payment - CUIT: $cuit - Product IDs: " . implode(", ", $productIds),
+                'entity'      => $vendor['uid'],
+                'tax_id'      => $vendor['cuit'],
+                'description' => "Split payment - UID: ".$vendor['uid']." - Product IDs: " . implode(", ", $productIds),
                 'total'       => $total + $shipping,
-                'reference'   => $body['reference'] . '_split_' . $cuit,
+                'reference'   => $body['reference'] . '_split_' . $vendor['uid'] . $vendor['cuit'],
                 'fee'         => $fee,
                 'hold'        => (bool) $this->helper->getVendor($item)->getData('mbbx_hold') ?: false,
             ];

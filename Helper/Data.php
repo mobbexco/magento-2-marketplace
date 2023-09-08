@@ -92,14 +92,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $vendors = [];
 
         foreach ($order->getAllVisibleItems() as $item) {
-            // Get cuit from item vendor
-            $cuit = $this->getVendor($item)->getData('mbbx_cuit');
+            
+            //Get vendor & vendor id
+            $vendorId = $item->getProduct()->getVendorId();
+            $vendor   = $this->getVendor($item);
+
+            // Get Mobbex UID & CUIT from item vendor
+            $uid  = $vendor->getData('mbbx_uid') ?: '';
+            $cuit = $vendor->getData('mbbx_cuit') ?: '';
 
             // Exit if cuit is empty
-            if (empty($cuit))
+            if (empty($uid) && empty($cuit))
                 return [];
 
-            $vendors[$cuit][] = $item;
+            //Assign vendor data to vendors array
+            $vendor[$vendorId]['uid']     = $uid;  
+            $vendor[$vendorId]['cuit']    = $cuit;
+            $vendor[$vendorId]['items'][] = $item;
         }
 
         return $vendors;

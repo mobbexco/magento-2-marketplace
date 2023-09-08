@@ -29,13 +29,13 @@ class UpgradeData implements UpgradeDataInterface
             // Establish attributes
             $attributes = [
                 'mbbx_cuit' => [
-                    'label'                     => 'Mobbex CUIT',
+                    'label'                     => 'Mobbex CUIT (Deprecated)',
                     'type'                      => 'varchar',
                     'input'                     => 'text',
                     'position'                  => 140,
                     'sort_order'                => 140,
                     'visible'                   => true,
-                    'required'                  => true,
+                    'required'                  => false,
                     'validate_rules'            => 'a:2:{s:15:"max_text_length";i:255;s:15:"min_text_length";i:1;}',
                     'default'                   => '',
                     'user_defined'              => 1,
@@ -67,7 +67,7 @@ class UpgradeData implements UpgradeDataInterface
                     'position'                  => 160,
                     'sort_order'                => 160,
                     'visible'                   => true,
-                    'required'                  => false,
+                    'required'                  => true,
                     'validate_rules'            => 'a:2:{s:15:"max_text_length";i:255;s:15:"min_text_length";i:1;}',
                     'default'                   => '',
                     'user_defined'              => 1,
