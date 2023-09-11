@@ -96,7 +96,7 @@ class Hooks
     }
 
     /**
-     * Gets entity uid from vendor item
+     * Gets entity uid from vendor item (fired on mobbex checkout creation)
      * 
      * @param mixed $item
      * 
