@@ -101,7 +101,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             $uid  = $vendor->getData('mbbx_uid') ?: '';
             $cuit = $vendor->getData('mbbx_cuit') ?: '';
 
-            // Exit if cuit is empty
+            // Exit if iud & cuit are empty
             if (empty($uid) && empty($cuit))
                 return [];
 
