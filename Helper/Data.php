@@ -106,19 +106,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Search seller uid of a product and returns it in entity position
+     * Get vendor uid of a product
      * 
-     * @param object $item
+     * @param object $item vendor item
      * 
-     * @return string $uid |$entity
+     * @return string $uid product vendor uid
      */
     public function getVendorUid($item)
     {
-        $entity = '';
-        // Get vendor uid from vnecoms vendor information or vendor id from product
-        $uid = $this->getVendor($item)->getData('mbbx_uid') ? $this->getVendor($item)->getData('mbbx_uid') : $item->getProduct()->getVendorId();
-
-        return $uid ?: $entity;
+        $uid = '';
+        // Try to get vendor uid from vnecoms vendor information
+        return $uid = $this->getVendor($item) ? $this->getVendor($item)->getData('mbbx_uid') : '';
     }
 
     /**
