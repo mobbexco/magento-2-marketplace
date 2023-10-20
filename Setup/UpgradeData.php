@@ -6,9 +6,16 @@ use Magento\Framework\Setup\UpgradeDataInterface;
 
 class UpgradeData implements UpgradeDataInterface
 {
-    public function __construct(\Magento\Eav\Setup\EavSetupFactory $eavSetupFactory)
+    /** @var \Magento\Framework\Module\Manager */
+    private $moduleManager;
+
+    public function __construct(
+        \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
+        \Magento\Framework\Module\Manager $moduleManager
+    )
     {
         $this->eavSetupFactory = $eavSetupFactory;
+        $this->moduleManager = $moduleManager;
     }
 
     /**
@@ -19,6 +26,12 @@ class UpgradeData implements UpgradeDataInterface
      */
     public function upgrade($setup, $context)
     {
+        // Check if Vnecoms Module is installed to continue
+        if (!$this->moduleManager->isEnabled('Vnecoms_Core')) {
+            throw new \Exception('Error: Vnecoms module is not installed. Please install Vnecoms module before installing Mobbex Marketplace.', 500);
+            return;
+        }
+
         $setup->startSetup();
 
         if ($context->getVersion() < '1.1.0') {
