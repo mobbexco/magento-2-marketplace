@@ -19,6 +19,7 @@ class UpgradeData implements UpgradeDataInterface
         // Load module manager and checks that vnecoms is enable
         $this->moduleManager = $moduleManager;
         $this->checkDependencies();
+
         // Init eav setup and get vendor entity to add attributes
         $this->eavSetup     = $eavSetupFactory->create(['setup' => $setup]);
         $this->vendorEntity = \Vnecoms\Vendors\Model\Vendor::ENTITY;
@@ -159,7 +160,6 @@ class UpgradeData implements UpgradeDataInterface
         // Check if Vnecoms Module is installed to continue
         if (!$this->moduleManager->isEnabled('Vnecoms_Core')) {
             throw new \Exception('Error: Vnecoms module is not installed. Please install Vnecoms module before installing Mobbex Marketplace.', 500);
-            return;
         }
     }
 }
