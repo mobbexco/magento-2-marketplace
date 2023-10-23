@@ -3,16 +3,25 @@
 namespace Mobbex\Marketplace\Setup;
 
 use Magento\Framework\Setup\UpgradeDataInterface;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
 
 class UpgradeData implements UpgradeDataInterface
 {
+    /** @var \Magento\Framework\Module\Manager */
+    private $moduleManager;
+
     public function __construct(
+        ModuleDataSetupInterface $setup,
+        \Magento\Framework\Module\Manager $moduleManager,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory
         )
     {
+        // Load module manager and checks that vnecoms is enable
+        $this->moduleManager = $moduleManager;
+        $this->checkDependencies();
         // Init eav setup and get vendor entity to add attributes
-        $this->eavSetup        = $eavSetupFactory->create(['setup' => $setup]);
-        $this->vendorEntity   = \Vnecoms\Vendors\Model\Vendor::ENTITY;
+        $this->eavSetup     = $eavSetupFactory->create(['setup' => $setup]);
+        $this->vendorEntity = \Vnecoms\Vendors\Model\Vendor::ENTITY;
     }
 
     /**
@@ -140,5 +149,17 @@ class UpgradeData implements UpgradeDataInterface
                     'sort_order'   => 15
                 ]
             );
+    }
+
+    /**
+     * Checks that Vnecoms module is installed
+     */
+    public function checkDependencies()
+    {
+        // Check if Vnecoms Module is installed to continue
+        if (!$this->moduleManager->isEnabled('Vnecoms_Core')) {
+            throw new \Exception('Error: Vnecoms module is not installed. Please install Vnecoms module before installing Mobbex Marketplace.', 500);
+            return;
+        }
     }
 }
