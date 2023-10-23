@@ -94,4 +94,16 @@ class Hooks
             $vendorOrder->save();
         }
     }
+
+    /**
+     * Gets entity uid from vendor item (fired on mobbex checkout creation)
+     * 
+     * @param mixed $item
+     * 
+     * @return string $uid | $entity
+     */
+    public function mobbexGetVendorEntity($item)
+    {
+        return $this->helper->getVendorUid($item);
+    }
 }

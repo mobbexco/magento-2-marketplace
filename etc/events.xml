@@ -6,4 +6,7 @@
     <event name="mobbex_webhook_received">
         <observer name="mobbex_update_totals" instance="Mobbex\Marketplace\Observer\Hooks"/>
     </event>
+    <event name="mobbex_get_vendor_entity">
+        <observer name="mobbex_vendor_uid" instance="Mobbex\Marketplace\Observer\Hooks"/>
+    </event>
 </config>

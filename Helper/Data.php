@@ -106,6 +106,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Get vendor uid of a product
+     * 
+     * @param object $item vendor item
+     * 
+     * @return string $uid product vendor uid
+     */
+    public function getVendorUid($item)
+    {
+        $uid = '';
+        // Try to get vendor uid from vnecoms vendor information
+        return $uid = $this->getVendor($item) ? $this->getVendor($item)->getData('mbbx_uid') : '';
+    }
+
+    /**
      * Get vendor orders from magento parent order.
      * 
      * @param Order $order
@@ -138,4 +152,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $amount;
     }
+
+
 }
