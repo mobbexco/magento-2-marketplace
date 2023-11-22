@@ -29,31 +29,17 @@ class Hooks
      */
     public function mobbexCheckoutRequest($body, $orderId)
     {
-        //get the order
-        $this->_order->loadByIncrementId($orderId);
-
-        $vendors = $this->helper->getVendorsByOrder($this->_order);
-
-        foreach ($vendors as $cuit => $items) {
-            $total = $fee = $shipping = 0;
-            $productIds = [];
-
-            foreach ($items as $item) {
-                $product = $item->getProduct();
-
-                $total       += $item->getRowTotalInclTax() - $item->getBaseDiscountAmount();
-                $fee         += $this->helper->getCommission($item);
-                $shipping     = $shipping ?: $this->helper->getVendorOrder($item)->getShippingInclTax();
-                $productIds[] = $product->getId();
-            }
+        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder) {
+            $vendor = $vendorOrder->getVendor();
 
             $body['split'][] = [
-                'tax_id'      => $cuit,
-                'description' => "Split payment - CUIT: $cuit - Product IDs: " . implode(", ", $productIds),
-                'total'       => $total + $shipping,
-                'reference'   => $body['reference'] . '_split_' . $cuit,
-                'fee'         => $fee,
-                'hold'        => (bool) $this->helper->getVendor($item)->getData('mbbx_hold') ?: false,
+                'description' => "Split: VID: {$vendor->getId()} VOID: {$vendorOrder->getId()}",
+                'reference'   => "$body[reference]_split_{$vendor->getId()}",
+                'entity'      => $vendor->getData('mbbx_uid'),
+                'tax_id'      => $vendor->getData('mbbx_cuit'),
+                'total'       => (float) $vendorOrder->getGrandTotal(),
+                'fee'         => $this->helper->getVendorOrderCommission($vendorOrder),
+                'hold'        => (bool) $vendor->getData('mbbx_hold') ?: false,
             ];
         }
 
@@ -104,6 +90,6 @@ class Hooks
      */
     public function mobbexGetVendorEntity($item)
     {
-        return $this->helper->getVendorUid($item);
+        return $this->helper->getVendor($item)->getData('mbbx_uid');
     }
 }

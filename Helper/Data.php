@@ -13,14 +13,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\Event\ManagerInterface */
     public $eventManager;
 
+    /** @var \Vnecoms\VendorsSales\Model\ResourceModel\Order\CollectionFactory */
+    public $vendorOrderCF;
+
     public function __construct(
         \Vnecoms\Vendors\Model\VendorFactory $vendorFactory,
         \Vnecoms\VendorsSales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\Event\ManagerInterface $eventManager
+        \Magento\Framework\Event\ManagerInterface $eventManager,
+        \Vnecoms\VendorsSales\Model\ResourceModel\Order\CollectionFactory $vendorOrderCF
     ) {
         $this->vendorFactory = $vendorFactory;
         $this->orderFactory  = $orderFactory;
         $this->eventManager  = $eventManager;
+        $this->vendorOrderCF = $vendorOrderCF;
     }
 
     /**
@@ -81,65 +86,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Retrieve order items ordered by cuit of each vendor.
-     * 
-     * @param Order $order
-     * 
-     * @return array
-     */
-    public function getVendorsByOrder($order)
-    {
-        $vendors = [];
-
-        foreach ($order->getAllVisibleItems() as $item) {
-            // Get cuit from item vendor
-            $cuit = $this->getVendor($item)->getData('mbbx_cuit');
-
-            // Exit if cuit is empty
-            if (empty($cuit))
-                return [];
-
-            $vendors[$cuit][] = $item;
-        }
-
-        return $vendors;
-    }
-
-    /**
-     * Get vendor uid of a product
-     * 
-     * @param object $item vendor item
-     * 
-     * @return string $uid product vendor uid
-     */
-    public function getVendorUid($item)
-    {
-        $uid = '';
-        // Try to get vendor uid from vnecoms vendor information
-        return $uid = $this->getVendor($item) ? $this->getVendor($item)->getData('mbbx_uid') : '';
-    }
-
-    /**
      * Get vendor orders from magento parent order.
      * 
-     * @param Order $order
+     * @param Order|int|string $order The instance or him id.
      * 
-     * @return Vnecoms\VendorsSales\Model\Order[]
+     * @return \Vnecoms\VendorsSales\Model\Order[]
      */
     public function getVendorOrders($order)
     {
-        $vendorOrders = [];
-
-        foreach ($this->getVendorsByOrder($order) as $items)
-            $vendorOrders[] = $this->getVendorOrder($items[0]);
-
-        return $vendorOrders;
+        return $this->vendorOrderCF->create()->addFieldToFilter(
+            'order_id',
+            is_object($order) ? $order->getId() : $order
+        );
     }
 
     /**
      * Retrieve vendor order commission calculated by Vnecoms.
      * 
-     * @param Vnecoms\VendorsSales\Model\Order $order
+     * @param \Vnecoms\VendorsSales\Model\Order $order
      * 
      * @return int
      */
@@ -152,6 +116,4 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $amount;
     }
-
-
 }
