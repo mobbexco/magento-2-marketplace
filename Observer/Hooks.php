@@ -10,12 +10,18 @@ class Hooks
     /** @var \Magento\Sales\Model\Order */
     public $_order;
 
+    /** @var \Mobbex\Webpay\Model\OrderUpdate */
+    public $orderUpdate;
+
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
-        \Magento\Sales\Model\Order $_order
+        \Magento\Sales\Model\Order $_order,
+        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
+
     ) {
         $this->helper = $helper;
         $this->_order = $_order;
+        $this->orderUpdate = $orderUpdate;
     }
 
     /**
@@ -58,6 +64,12 @@ class Hooks
         $diff = $webhook['payment']['total'] / $order->getGrandTotal();
 
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
+            $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
+            $orderStatus = $this->orderUpdate->config->get($statusName);
+    
+            if ($orderStatus == 'canceled')
+                $vendorOrder->registerCancellation('', true, false);
+
             // Get current vendor order totals
             $orderTotal    = $vendorOrder->getGrandTotal();
             $discountTotal = $vendorOrder->getDiscountAmount();
