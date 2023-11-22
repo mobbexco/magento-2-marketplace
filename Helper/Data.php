@@ -13,14 +13,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\Event\ManagerInterface */
     public $eventManager;
 
+    /** @var \Vnecoms\VendorsSales\Model\ResourceModel\Order\CollectionFactory */
+    public $vendorOrderCF;
+
     public function __construct(
         \Vnecoms\Vendors\Model\VendorFactory $vendorFactory,
         \Vnecoms\VendorsSales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\Event\ManagerInterface $eventManager
+        \Magento\Framework\Event\ManagerInterface $eventManager,
+        \Vnecoms\VendorsSales\Model\ResourceModel\Order\CollectionFactory $vendorOrderCF
     ) {
         $this->vendorFactory = $vendorFactory;
         $this->orderFactory  = $orderFactory;
         $this->eventManager  = $eventManager;
+        $this->vendorOrderCF = $vendorOrderCF;
     }
 
     /**
@@ -81,76 +86,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Retrieve order items ordered by cuit of each vendor.
-     * 
-     * @param Order $order
-     * 
-     * @return array
-     */
-    public function getVendorsByOrder($order)
-    {
-        $vendors = [];
-
-        foreach ($order->getAllVisibleItems() as $item) {
-            
-            //Get vendor & vendor id
-            $vendorId = $item->getProduct()->getVendorId();
-            $vendor   = $this->getVendor($item);
-
-            // Get Mobbex UID & CUIT from item vendor
-            $uid  = $vendor->getData('mbbx_uid') ?: '';
-            $cuit = $vendor->getData('mbbx_cuit') ?: '';
-
-            // Exit if iud & cuit are empty
-            if (empty($uid) && empty($cuit))
-                return [];
-
-            //Assign vendor data to vendors array
-            $vendor[$vendorId]['uid']     = $uid;  
-            $vendor[$vendorId]['cuit']    = $cuit;
-            $vendor[$vendorId]['items'][] = $item;
-        }
-
-        return $vendors;
-    }
-
-    /**
-     * Search seller uid of a product and returns it in entity position
-     * 
-     * @param object $item
-     * 
-     * @return string $uid |$entity
-     */
-    public function getVendorUid($item)
-    {
-        $entity = '';
-        // Get vendor uid from vnecoms vendor information or vendor id from product
-        $uid = $this->getVendor($item)->getData('mbbx_uid') ? $this->getVendor($item)->getData('mbbx_uid') : $item->getProduct()->getVendorId();
-
-        return $uid ?: $entity;
-    }
-
-    /**
      * Get vendor orders from magento parent order.
      * 
-     * @param Order $order
+     * @param Order|int|string $order The instance or him id.
      * 
-     * @return Vnecoms\VendorsSales\Model\Order[]
+     * @return \Vnecoms\VendorsSales\Model\Order[]
      */
     public function getVendorOrders($order)
     {
-        $vendorOrders = [];
-
-        foreach ($this->getVendorsByOrder($order) as $items)
-            $vendorOrders[] = $this->getVendorOrder($items[0]);
-
-        return $vendorOrders;
+        return $this->vendorOrderCF->create()->addFieldToFilter(
+            'order_id',
+            is_object($order) ? $order->getId() : $order
+        );
     }
 
     /**
      * Retrieve vendor order commission calculated by Vnecoms.
      * 
-     * @param Vnecoms\VendorsSales\Model\Order $order
+     * @param \Vnecoms\VendorsSales\Model\Order $order
      * 
      * @return int
      */
@@ -163,6 +116,4 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $amount;
     }
-
-
 }
