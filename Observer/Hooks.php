@@ -94,6 +94,23 @@ class Hooks
     }
 
     /**
+     * Cancel vendor orders if the cart needs to be restored.
+     * 
+     * @param int $status Operation status.
+     * @param int|string $quoteId 
+     * @param int $orderId Order entity ID.
+     */
+    public function mobbexPaymentReturn($status, $quoteId, $orderId)
+    {
+        if (!$quoteId || ($status > 1 && $status < 400))
+            return;
+
+        // On failed payments, cancel previous orders to restore cart
+        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder)
+            $vendorOrder->registerCancellation('', true, false);
+    }
+
+    /**
      * Gets entity uid from vendor item (fired on mobbex checkout creation)
      * 
      * @param mixed $item
