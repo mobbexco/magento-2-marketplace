@@ -6,7 +6,7 @@
     <event name="mobbex_webhook_received">
         <observer name="mobbex_update_totals" instance="Mobbex\Marketplace\Observer\Hooks"/>
     </event>
-    <event name="mobbex_payment_return">
+    <event name="mobbex_cancel_sub_order">
         <observer name="mobbex_restore_cart" instance="Mobbex\Marketplace\Observer\Hooks"/>
     </event>
     <event name="mobbex_get_vendor_entity">

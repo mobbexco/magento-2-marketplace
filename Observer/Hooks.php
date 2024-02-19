@@ -67,7 +67,7 @@ class Hooks
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
     
-            if ($orderStatus == 'canceled')
+            if ($webhook['payment']['status']['code'] > 1 && $webhook['payment']['status']['code'] < 400)
                 $vendorOrder->registerCancellation('', true, false);
 
             // Get current vendor order totals
@@ -93,19 +93,16 @@ class Hooks
         }
     }
 
-    /**
-     * Cancel vendor orders if the cart needs to be restored.
-     * 
-     * @param int $status Operation status.
-     * @param int|string $quoteId 
-     * @param int $orderId Order entity ID.
-     */
-    public function mobbexPaymentReturn($status, $quoteId, $orderId)
-    {
-        if (!$quoteId || ($status > 1 && $status < 400))
-            return;
 
-        // On failed payments, cancel previous orders to restore cart
+    /**
+     * Cancel sub-orders for an order id.
+     * 
+     * @param int|string $orderId
+     * 
+     */
+    public function mobbexCancelSubOrder($orderId)
+    {
+        // Cancel each sub-order
         foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder)
             $vendorOrder->registerCancellation('', true, false);
     }
@@ -121,4 +118,5 @@ class Hooks
     {
         return $this->helper->getVendor($item)->getData('mbbx_uid');
     }
+
 }
