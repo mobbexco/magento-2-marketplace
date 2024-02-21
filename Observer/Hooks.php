@@ -69,6 +69,9 @@ class Hooks
     
             if ($webhook['payment']['status']['code'] > 1 && $webhook['payment']['status']['code'] < 400)
                 $vendorOrder->registerCancellation('', true, false);
+            
+            // Set suborder status
+            $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
 
             // Get current vendor order totals
             $orderTotal    = $vendorOrder->getGrandTotal();
