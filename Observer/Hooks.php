@@ -67,7 +67,7 @@ class Hooks
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
     
-            if ($webhook['payment']['status']['code'] > 1 && $webhook['payment']['status']['code'] < 400)
+            if ($webhook['payment']['status']['code'] > 302 && $webhook['payment']['status']['code'] < 700)
                 $vendorOrder->registerCancellation('', true, false);
             
             // Set suborder status
