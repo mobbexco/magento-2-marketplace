@@ -73,6 +73,10 @@ class Hooks
             // Set suborder status
             $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
 
+            // Avoid to modify total in refund webhooks
+            if (in_array($webhook['payment']['status']['code'], ['601', '602', '603', '604', '605', '610']))
+                return $vendorOrder->save();
+
             // Get current vendor order totals
             $orderTotal    = $vendorOrder->getGrandTotal();
             $discountTotal = $vendorOrder->getDiscountAmount();
