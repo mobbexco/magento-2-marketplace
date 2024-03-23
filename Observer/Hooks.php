@@ -66,9 +66,6 @@ class Hooks
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
-    
-            if ($webhook['payment']['status']['code'] > 302 && $webhook['payment']['status']['code'] < 700)
-                $vendorOrder->registerCancellation('', true, false);
             
             // Set suborder status
             $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
@@ -112,8 +109,10 @@ class Hooks
     public function mobbexCancelSubOrder($orderId)
     {
         // Cancel each sub-order
-        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder)
+        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder){
             $vendorOrder->registerCancellation('', true, false);
+            $vendorOrder->save();
+        }
     }
 
     /**
