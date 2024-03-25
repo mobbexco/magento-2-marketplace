@@ -21,7 +21,7 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "mobbexco/magento-2": "^3",
+        "mobbexco/magento-2": "dev-master",
         "vnecoms/module-core": "*"
     },
     "require-dev": {
