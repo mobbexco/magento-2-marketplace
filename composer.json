@@ -24,6 +24,11 @@
         "mobbexco/magento-2": "^3",
         "vnecoms/module-core": "*"
     },
+    "require-dev": {
+        "magento/magento-composer-installer": "*",
+        "mobbexco/magento-2": "dev-master",
+        "vnecoms/module-core": "*"
+    },
     "autoload": {
         "files": [
             "registration.php"
