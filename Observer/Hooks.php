@@ -13,15 +13,20 @@ class Hooks
     /** @var \Mobbex\Webpay\Model\OrderUpdate */
     public $orderUpdate;
 
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
         \Magento\Sales\Model\Order $_order,
-        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
+        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate,
+        \Mobbex\Webpay\Helper\Config $config
 
     ) {
         $this->helper = $helper;
         $this->_order = $_order;
         $this->orderUpdate = $orderUpdate;
+        $this->config = $config;
     }
 
     /**
@@ -35,6 +40,10 @@ class Hooks
      */
     public function mobbexCheckoutRequest($body, $orderId)
     {
+        // Exit if multivendor is active, the entity is obtained in mobbexGetVendorEntity
+        if (in_array($this->config->get('multivendor'), ['unified', 'active']))
+            return $body;
+
         foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder) {
             $vendor = $vendorOrder->getVendor();
 
@@ -66,12 +75,12 @@ class Hooks
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
-            
+
             // Set suborder status
             $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
 
             // Avoid to modify total in refund webhooks
-            if (in_array($webhook['payment']['status']['code'], ['601', '602', '603', '604', '605', '610'])){
+            if (in_array($webhook['payment']['status']['code'], ['601', '602', '603', '604', '605', '610'])) {
                 $vendorOrder->save();
                 continue;
             }
@@ -109,7 +118,7 @@ class Hooks
     public function mobbexCancelSubOrder($orderId)
     {
         // Cancel each sub-order
-        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder){
+        foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder) {
             $vendorOrder->registerCancellation('', true, false);
             $vendorOrder->save();
         }
@@ -126,5 +135,4 @@ class Hooks
     {
         return $this->helper->getVendor($item)->getData('mbbx_uid');
     }
-
 }
