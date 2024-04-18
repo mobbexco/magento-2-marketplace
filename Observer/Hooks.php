@@ -70,7 +70,7 @@ class Hooks
     public function mobbexWebhookReceived($webhook, $order)
     {
         // Get diff percentage
-        $diff = $webhook['payment']['total'] / $order->getGrandTotal();
+        $diff = $webhook['payment']['total'] / $webhook['payment']['requestedTotal'];
 
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
