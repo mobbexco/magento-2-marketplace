@@ -40,22 +40,42 @@ class Hooks
      */
     public function mobbexCheckoutRequest($body, $orderId)
     {
-        // Exit if multivendor is active, the entity is obtained in mobbexGetVendorEntity
-        if (in_array($this->config->get('multivendor'), ['unified', 'active']))
-            return $body;
-
         foreach ($this->helper->getVendorOrders($orderId) as $vendorOrder) {
             $vendor = $vendorOrder->getVendor();
 
-            $body['split'][] = [
-                'description' => "Split: VID: {$vendor->getId()} VOID: {$vendorOrder->getId()}",
-                'reference'   => "$body[reference]_split_{$vendor->getId()}",
-                'entity'      => $vendor->getData('mbbx_uid'),
-                'tax_id'      => $vendor->getData('mbbx_cuit'),
-                'total'       => (float) $vendorOrder->getGrandTotal(),
-                'fee'         => $this->helper->getVendorOrderCommission($vendorOrder),
-                'hold'        => (bool) $vendor->getData('mbbx_hold') ?: false,
-            ];
+            if (in_array($this->config->get('multivendor'), ['unified', 'active'])) {
+
+                //Total to compare with vendor grand total
+                $itemsTotal = 0;
+
+                //Get items totals
+                foreach ($vendorOrder->getAllItems() as $item)
+                    $itemsTotal += round($item->getPrice(), 2) * $item->getQtyOrdered();
+
+                //Add charges/discounts if there are differences between totals.
+                $difference = $vendorOrder->getGrandTotal() - $itemsTotal;
+
+                if($difference > 0 || $difference < 0) {
+                    $body['items'][] = [
+                        "description" => ($difference > 0 ? 'Charges ' : 'Discounts ') . $vendor->getName(),
+                        "quantity"    => 1,
+                        "total"       => $difference,
+                        "entity"      => $vendor->getData('mbbx_uid')
+                    ];    
+                }
+
+            } else {
+                $body['split'][] = [
+                    'description' => "Split: VID: {$vendor->getId()} VOID: {$vendorOrder->getId()}",
+                    'reference'   => "$body[reference]_split_{$vendor->getId()}",
+                    'entity'      => $vendor->getData('mbbx_uid'),
+                    'tax_id'      => $vendor->getData('mbbx_cuit'),
+                    'total'       => (float) $vendorOrder->getGrandTotal(),
+                    'fee'         => $this->helper->getVendorOrderCommission($vendorOrder),
+                    'hold'        => (bool) $vendor->getData('mbbx_hold') ?: false,
+                ];
+            }
+
         }
 
         return $body;
