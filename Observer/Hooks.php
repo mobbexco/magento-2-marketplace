@@ -44,20 +44,20 @@ class Hooks
             $vendor = $vendorOrder->getVendor();
 
             if (in_array($this->config->get('multivendor'), ['unified', 'active'])) {
-
-                //Total to compare with vendor grand total
                 $itemsTotal = 0;
 
                 //Get items totals
                 foreach ($vendorOrder->getAllItems() as $item)
-                    $itemsTotal += round($item->getPrice(), 2) * $item->getQtyOrdered();
+                    $itemsTotal += round($item->getRowTotalInclTax(), 2);
 
                 //Add charges/discounts if there are differences between totals.
                 $difference = $vendorOrder->getGrandTotal() - $itemsTotal;
 
                 if($difference > 0 || $difference < 0) {
+                    $label = $difference > 0 ? 'Envío/Recargos' : 'Descuento/s';
+
                     $body['items'][] = [
-                        "description" => ($difference > 0 ? 'Charges ' : 'Discounts ') . $vendor->getName(),
+                        "description" => "$label ${$vendor->getName()}",
                         "quantity"    => 1,
                         "total"       => $difference,
                         "entity"      => $vendor->getData('mbbx_uid')
