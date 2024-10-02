@@ -2,7 +2,7 @@
     "name": "mobbexco/magento-2-marketplace",
     "description": "Mobbex Vnecoms Marketplace Integration Module",
     "type": "magento2-module",
-    "version": "1.3.4",
+    "version": "1.4.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
@@ -21,7 +21,7 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "mobbexco/magento-2": "^3",
+        "mobbexco/magento-2": ">3.12",
         "vnecoms/module-core": "*"
     },
     "autoload": {
@@ -31,6 +31,5 @@
         "psr-4": {
             "Mobbex\\Marketplace\\": ""
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
