@@ -18,7 +18,7 @@ class Totals extends \Magento\Framework\View\Element\Template
     {
         $order = $this->getSource();
 
-        $finnancialCharge = $order->getMbbxFinnancialCharge();
+        $finnancialCharge = $order->getMbbxFinnancialCharge() ?: 0;
         $finalCommission  = $order->getMbbxFinalCommission();
 
         if ($finnancialCharge != 0) {
@@ -27,7 +27,7 @@ class Totals extends \Magento\Framework\View\Element\Template
                     'code' => 'mbbx_finnancial_charge',
                     'strong' => true,
                     'value' => $finnancialCharge,
-                    'label' => __('Finnancial Charge'),
+                    'label' => __($finnancialCharge > 0 ? 'Finnancial Charge' : 'Descuento financiero'),
                 ]), 
                 'grand_total'
             );
