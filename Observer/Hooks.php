@@ -105,7 +105,7 @@ class Hooks
                 continue;
 
             // Exit if order amount is already updated or if the amounts are equal
-            if ($vendorOrder->getMbbxFinnancialCharge() || abs($webhook['payment']['total'] - $webhook['payment']['requestedTotal']) < 1)
+            if ((float) $vendorOrder->getMbbxFinnancialCharge() || abs($webhook['payment']['total'] - $webhook['payment']['requestedTotal']) < 1)
                 continue;
 
             // Get total paid in mobbex
