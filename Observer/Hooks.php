@@ -96,29 +96,23 @@ class Hooks
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
 
-            // Set suborder status
+            // Update status
             $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
+            $vendorOrder->save();
 
-            // Avoid to modify total in refund webhooks
-            if (in_array($webhook['payment']['status']['code'], ['601', '602', '603', '604', '605', '610'])) {
-                $vendorOrder->save();
+            // Only modify totals if the payment was successful
+            if ($webhook['payment']['status']['code'] < 200 || $webhook['payment']['status']['code'] > 599)
                 continue;
-            }
 
-            // Get current vendor order totals
-            $orderTotal    = $vendorOrder->getGrandTotal();
-            $discountTotal = $vendorOrder->getDiscountAmount();
+            // Exit if order amount is already updated or if the amounts are equal
+            if ($vendorOrder->getMbbxFinnancialCharge() || abs($webhook['payment']['total'] - $webhook['payment']['requestedTotal']) < 1)
+                continue;
 
             // Get total paid in mobbex
-            $totalPaid = $orderTotal * $diff;
-
-            if ($diff < 1) {
-                $vendorOrder->setDiscountAmount($discountTotal + ($orderTotal - $totalPaid));
-            } else if ($diff > 1) {
-                $vendorOrder->setMbbxFinnancialCharge($totalPaid - $orderTotal);
-            }
+            $totalPaid = $vendorOrder->getGrandTotal() * $diff;
 
             // Update vendor order
+            $vendorOrder->setMbbxFinnancialCharge($totalPaid - $vendorOrder->getGrandTotal());
             $vendorOrder->setGrandTotal($totalPaid);
             $vendorOrder->setTotalPaid($totalPaid);
             $vendorOrder->setTotalDue(0);

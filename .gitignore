@@ -2,3 +2,5 @@
 mobbex*.zip
 /.vscode
 /.idea
+vendor
+composer.lock
