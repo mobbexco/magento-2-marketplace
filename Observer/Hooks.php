@@ -7,6 +7,9 @@ class Hooks
     /** @var \Mobbex\Marketplace\Helper\Data */
     public $helper;
 
+    /** @var \Mobbex\Marketplace\Helper\Refund */
+    public $refund;
+
     /** @var \Magento\Sales\Model\Order */
     public $_order;
 
@@ -16,17 +19,24 @@ class Hooks
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
+    /** @var \Magento\Framework\Registry */
+    public $registry;
+
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
         \Magento\Sales\Model\Order $_order,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate,
-        \Mobbex\Webpay\Helper\Config $config
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Marketplace\Helper\Refund $refund,
+        \Magento\Framework\Registry $registry
 
     ) {
         $this->helper = $helper;
         $this->_order = $_order;
         $this->orderUpdate = $orderUpdate;
         $this->config = $config;
+        $this->refund = $refund;
+        $this->registry = $registry;
     }
 
     /**
@@ -120,6 +130,85 @@ class Hooks
 
             $vendorOrder->save();
         }
+    }
+
+    /**
+     * Update vendor order totals using webhook data (fired on webhook receive).
+     * 
+     * @param array $webhook
+     * @param Order $order
+     */
+    public function mobbexChildWebhookReceived($webhook, $order)
+    {
+        $entity = $webhook['entity']['uid'];
+        $status = $webhook['payment']['status']['code'];
+
+        // Get status config
+        $prevStatus  = $order->getStatus();
+        $statusName  = $this->orderUpdate->getStatusConfigName($status);
+        $orderStatus = $this->orderUpdate->config->get($statusName);
+
+        // Only process refunds child webhooks
+        if (!in_array($status, [600, 601, 602, 603, 610]))
+            return;
+
+        $vendorOrder = $this->helper->getVendorOrderByUID($order, $entity);
+
+        if (!$vendorOrder)
+            return;
+
+        try {
+            $this->refund->refund($vendorOrder);
+        } catch (\Exception $e) {
+            $this->logger->log('error', 'Mobbex: Error refunding Order on Child', $order->getId());
+        }
+
+        $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
+        $vendorOrder->save();
+
+        // Check if order now has closed status and change to the final status
+        $this->_order->load($order->getId());
+        $newStatus = $this->_order->getStatus();
+
+        $this->logger->log('debug', 'Mobbex: Comparing Parent Order Status: ', [$prevStatus, $newStatus, $orderStatus]);
+
+        if ($prevStatus != $newStatus && $newStatus != $orderStatus) {
+            $this->logger->log('debug', "Mobbex: Updating Parent Order Status to $orderStatus");
+
+            $order->setState($prevStatus)->setStatus($prevStatus);
+            $order->save();
+
+            $this->logger->log('debug', "Mobbex: Updated Parent Order Status to $orderStatus");
+        }
+    }
+
+    public function mobbexOrderPanelInfo($table, $info, $transaction, $childs)
+    {
+        $vendorOrder = $this->registry->registry('vendor_order');
+
+        if (!$vendorOrder)
+            return $table;
+
+        // Get entity from vendor order and
+        $vendor = $vendorOrder->getVendor();
+        $entity = $vendor->getData('mbbx_uid');
+
+        $newTable = [];
+
+        foreach ($childs as $chd) {
+            if ($chd['entity_uid'] != $entity)
+                continue;
+
+            $newTable = [
+                'Transaction ID'     => $chd['payment_id'],
+                'Total'              => "$ $chd[total]",
+                'Source'             => "$chd[source_name], $chd[source_number]",
+                'Source Installment' => "$chd[installment_count] cuota/s de $ $chd[installment_amount] (plan $chd[installment_name])",
+                'Entity Name'        => "$chd[entity_name] (UID $chd[entity_uid])"
+            ];
+        }
+
+        return $newTable;
     }
 
 

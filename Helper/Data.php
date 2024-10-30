@@ -101,6 +101,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Get the vendor order by his entity uid.
+     * 
+     * @param Order|int|string $order The instance or him id.
+     * @param string $uid
+     * 
+     * @return \Vnecoms\VendorsSales\Model\Order
+     */
+    public function getVendorOrderByUID($order, $uid)
+    {
+        foreach ($this->getVendorOrders($order) as $vendorOrder) {
+            $vendor = $vendorOrder->getVendor();
+
+            if ($vendor->getData('mbbx_uid') == $uid)
+                return $vendorOrder;
+        }
+    }
+
+    /**
      * Retrieve vendor order commission calculated by Vnecoms.
      * 
      * @param \Vnecoms\VendorsSales\Model\Order $order
