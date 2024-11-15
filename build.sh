@@ -1,5 +1,5 @@
 #!/bin/sh
-ver="1.4.0"
+ver="1.4.1"
 
 # Compress archive
 if type 7z > /dev/null; then
