@@ -182,6 +182,9 @@ class Hooks
 
             $this->logger->log('debug', "Mobbex: Updated Parent Order Status to $orderStatus");
         }
+
+        $order->addCommentToStatusHistory("Refunded amount $ $webhook[payment][total] for operation on entity $entity");
+        $order->save();
     }
 
     public function mobbexOrderPanelInfo($table, $info, $transaction, $childs)
