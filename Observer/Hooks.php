@@ -22,13 +22,17 @@ class Hooks
     /** @var \Magento\Framework\Registry */
     public $registry;
 
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
         \Magento\Sales\Model\Order $_order,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Marketplace\Helper\Refund $refund,
-        \Magento\Framework\Registry $registry
+        \Magento\Framework\Registry $registry,
+        \Mobbex\Webpay\Helper\Logger $logger
 
     ) {
         $this->helper = $helper;
@@ -37,6 +41,7 @@ class Hooks
         $this->config = $config;
         $this->refund = $refund;
         $this->registry = $registry;
+        $this->logger = $logger;
     }
 
     /**
@@ -159,6 +164,9 @@ class Hooks
         if (!$vendorOrder)
             return;
 
+        if ($vendorOrder->getStatus() == $orderStatus)
+            return $this->logger->log('debug', 'Mobbex: Child Order Already Refunded', $vendorOrder->getId());
+
         try {
             $this->refund->refund($vendorOrder);
         } catch (\Exception $e) {
@@ -183,7 +191,11 @@ class Hooks
             $this->logger->log('debug', "Mobbex: Updated Parent Order Status to $orderStatus");
         }
 
-        $order->addCommentToStatusHistory("Refunded amount $ $webhook[payment][total] for operation on entity $entity");
+        $order->addCommentToStatusHistory(sprintf(
+            "Received Refund Webhook for Seller %s. Amount $ %s",
+            $vendorOrder->getVendor()->getVendorId(),
+            (string) $webhook['payment']['total']
+        ));
         $order->save();
     }
 
