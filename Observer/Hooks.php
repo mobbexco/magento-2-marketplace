@@ -99,9 +99,6 @@ class Hooks
      */
     public function mobbexWebhookReceived($webhook, $order)
     {
-        // Get diff percentage
-        $diff = $webhook['payment']['total'] / $webhook['payment']['requestedTotal'];
-
         foreach ($this->helper->getVendorOrders($order) as $vendorOrder) {
             $statusName  = $this->orderUpdate->getStatusConfigName($webhook['payment']['status']['code']);
             $orderStatus = $this->orderUpdate->config->get($statusName);
@@ -110,21 +107,26 @@ class Hooks
             $vendorOrder->setState($orderStatus)->setStatus($orderStatus);
             $vendorOrder->save();
 
-            // Only modify totals if the payment was successful
+            // Get vendor child webhook
+            $vendor = $vendorOrder->getVendor();
+            $vendorWebhook = current(array_filter($webhook['childs'], function ($child) use ($vendor) {
+                return $child['entity']['uid'] == $vendor->getData('mbbx_uid');
+            }));
+
+            //Get totals difference:
+            $diff = $vendorWebhook['payment']['total'] - $vendorWebhook['payment']['requestedTotal'];
+
             if ($webhook['payment']['status']['code'] < 200 || $webhook['payment']['status']['code'] > 599)
                 continue;
 
             // Exit if order amount is already updated or if the amounts are equal
-            if ((float) $vendorOrder->getMbbxFinnancialCharge() || abs($webhook['payment']['total'] - $webhook['payment']['requestedTotal']) < 1)
+            if ((float) $vendorOrder->getMbbxFinnancialCharge() || abs($diff) < 1)
                 continue;
 
-            // Get total paid in mobbex
-            $totalPaid = $vendorOrder->getGrandTotal() * $diff;
-
             // Update vendor order
-            $vendorOrder->setMbbxFinnancialCharge($totalPaid - $vendorOrder->getGrandTotal());
-            $vendorOrder->setGrandTotal($totalPaid);
-            $vendorOrder->setTotalPaid($totalPaid);
+            $vendorOrder->setMbbxFinnancialCharge($diff);
+            $vendorOrder->setGrandTotal($vendorWebhook['payment']['total']);
+            $vendorOrder->setTotalPaid($vendorWebhook['payment']['total']);
             $vendorOrder->setTotalDue(0);
             $vendorOrder->setMbbxFinalCommission($this->helper->getVendorOrderCommission($vendorOrder) * $diff);
 
