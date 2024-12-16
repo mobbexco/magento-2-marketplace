@@ -25,6 +25,9 @@ class Hooks
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Model\Transaction */
+    public $mobbexTransaction;
+
     public function __construct(
         \Mobbex\Marketplace\Helper\Data $helper,
         \Magento\Sales\Model\Order $_order,
@@ -32,8 +35,8 @@ class Hooks
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Marketplace\Helper\Refund $refund,
         \Magento\Framework\Registry $registry,
-        \Mobbex\Webpay\Helper\Logger $logger
-
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
     ) {
         $this->helper = $helper;
         $this->_order = $_order;
@@ -42,6 +45,7 @@ class Hooks
         $this->refund = $refund;
         $this->registry = $registry;
         $this->logger = $logger;
+        $this->mobbexTransaction = $mobbexTransactionFactory->create();
     }
 
     /**
@@ -212,6 +216,13 @@ class Hooks
 
         $newTable = [];
 
+        //Get refunded amount
+        $totalRefunded = 0;
+        $refundedTrx = $this->mobbexTransaction->getRefundedChilds($transaction['order_id'], $entity);
+        foreach ($refundedTrx as $chd)
+            if (in_array($chd['status_code'], [600, 601, 602, 603, 610]))
+                $totalRefunded += $chd['total'];
+
         foreach ($childs as $chd) {
             if ($chd['entity_uid'] != $entity)
                 continue;
@@ -219,6 +230,7 @@ class Hooks
             $newTable = [
                 'Transaction ID'     => $chd['payment_id'],
                 'Total'              => "$ $chd[total]",
+                'Total Refunded '    => "$ $totalRefunded",
                 'Source'             => "$chd[source_name], $chd[source_number]",
                 'Source Installment' => "$chd[installment_count] cuota/s de $ $chd[installment_amount] (plan $chd[installment_name])",
                 'Entity Name'        => "$chd[entity_name] (UID $chd[entity_uid])"
