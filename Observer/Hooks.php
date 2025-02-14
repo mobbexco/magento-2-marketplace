@@ -216,10 +216,9 @@ class Hooks
 
         $newTable = [];
 
-        //Get refunded amount
-        $totalRefunded = 0;
+        // Get refunded amount
         $refundedTrx   = $this->mobbexTransaction->getRefundedChilds($transaction['order_id'], $entity);
-        $totalRefunded = array_sum(array_column($refundedTrx, 'total'));
+        $totalRefunded = array_sum(array_column($refundedTrx, 'total')) ?: 0;
 
         foreach ($childs as $chd) {
             if ($chd['entity_uid'] != $entity)
