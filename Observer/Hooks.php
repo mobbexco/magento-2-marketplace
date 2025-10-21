@@ -101,6 +101,36 @@ class Hooks
     }
 
     /**
+     * Adds split data to draft checkout.
+     * 
+     * @param array $body
+     * @param string $quoteId
+     * 
+     * @return array
+     */
+    public function mobbexDraftCheckoutRequest($body, $quoteId)
+    {
+        // On multivendor only set entity to product items (see mobbexGetVendorEntity)
+        if (in_array($this->config->get('multivendor'), ['unified', 'active']))
+            return $body;
+
+        // For split, create vendor orders temporally (to get the grand total)
+        foreach ($this->helper->createVendorOrders($quoteId) as $vendorId => $vendorOrder) {
+            $vendor = $vendorOrder->getVendor();
+
+            $body['split'][] = [
+                'description' => "Split: VID: {$vendor->getId()} VOID: {$vendorOrder->getId()}",
+                'reference'   => "$body[reference]_split_{$vendor->getId()}",
+                'entity'      => $vendor->getData('mbbx_uid'),
+                'tax_id'      => $vendor->getData('mbbx_cuit'),
+                'total'       => (float) $vendorOrder->getGrandTotal(),
+            ];
+        }
+
+        return $body;
+    }
+
+    /**
      * Update vendor order totals using webhook data (fired on webhook receive).
      * 
      * @param array $webhook
